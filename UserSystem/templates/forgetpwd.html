@@ -1,0 +1,61 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+{% load staticfiles %}
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>找回密码页面</title>
+    <link rel="stylesheet" type="text/css" href={% static 'css/style.css' %}/>
+    <link rel="stylesheet" type="text/css" href={% static 'css/body.css' %}/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+</head>
+<body>
+<div class="container">
+    <section id="content">
+        <form action="/forget/" method="post">
+            <h1>找回密码</h1>
+            <div>
+                <input class="icon" type="email" placeholder="邮箱" required="" id="email" name="email"
+                       autocomplete="off"/>
+            </div>
+
+
+            <div class="captchapwd">
+                {{ forget_form.captcha }}
+                <div style="color: red;position: absolute;top:59%;left:32%">
+                    <p>{{ forget_form.email.errors.0 }}</p>
+                    <p>{{ forget_form.captcha.errors.0 }}</p>
+                    <p>{{ msg }}</p>
+                </div>
+
+            </div>
+
+
+            <div class="">
+                <span class="help-block u-errormessage" id="js-server-helpinfo">&nbsp;</span></div>
+            <div>
+                <!-- <input type="submit" value="Log in" /> -->
+                <input type="submit" value="找回密码" class="btn btn-primary" id="js-btn-login"/>
+                {% csrf_token %}
+                <a href={% url 'login' %}>返回登录界面</a>
+                <a href={% url 'register' %}>返回注册界面</a>
+                <!-- <a href="#">Register</a> -->
+            </div>
+        </form><!-- form -->
+        <div class="button">
+            <span class="help-block u-errormessage" id="js-server-helpinfo">&nbsp;</span>
+            <a href="#">点我没惊喜</a>
+        </div> <!-- button -->
+    </section><!-- content -->
+</div>
+<!-- container -->
+
+
+<br><br><br><br>
+<div style="text-align:center;">
+    <p>版权所有</p>
+</div>
+</body>
+
+<script src="{% static 'js/reflash.js' %}"></script>
+</html>

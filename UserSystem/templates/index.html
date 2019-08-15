@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>主页面</title>
+</head>
+<body>
+
+<!--判断用户是否已经登录-->
+{% if request.user.is_authenticated %}
+
+    <div>
+        <h1 style="color:deepskyblue; text-align: center;">您已登录,欢迎您:{{ user }}</h1>
+        <h2 style="color:#ff3c66; text-align: center;">您还可以  <a href="{% url 'logout' %}">注销登录</a></h2>
+</h2>
+        <p>这里就可以写你对应的主页逻辑操作了,hhhh</p>
+
+    </div>
+
+{% else %}
+    <div>
+        Have nothing in it
+    </div>
+{% endif %}
+</body>
+</html>
