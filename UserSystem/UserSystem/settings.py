@@ -15,7 +15,6 @@ import os
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 
@@ -27,7 +26,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -38,7 +36,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'userapp',
-    'captcha'
+    'captcha',
+    'restapp',
+    'rest_framework.authtoken',
+    'rest_framework'
 ]
 
 MIDDLEWARE = [
@@ -56,7 +57,7 @@ ROOT_URLCONF = 'UserSystem.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR,'templates')],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -71,7 +72,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'UserSystem.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
@@ -81,7 +81,6 @@ DATABASES = {
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
@@ -101,7 +100,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/1.11/topics/i18n/
 
@@ -115,13 +113,12 @@ USE_L10N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
 STATIC_URL = '/static/'
-STATICFILES_DIRS= [
-    os.path.join(BASE_DIR,"static")
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "static")
 ]
 
 AUTH_USER_MODEL = "userapp.UserProfile"
@@ -129,13 +126,34 @@ AUTH_USER_MODEL = "userapp.UserProfile"
 # 配置发送激活链接的邮箱地址,账号密码等信息
 EMAIL_HOST = "smtp.sina.cn"
 EMAIL_PORT = 25
-EMAIL_HOST_USER = "你的邮箱地址(如:rjearlyup@sina.cn)"
-EMAIL_HOST_PASSWORD = "(授权码,在开启smtp的时候会给你的,不是登录密码,记住了！如:cda3997346da4578)"
+EMAIL_HOST_USER = "rjearlyup@sina.cn"
+# cda3997346da4578)
+EMAIL_HOST_PASSWORD = "cda3997346da7814"
 EMAIL_USE_TLS = False
-EMAIL_FROM = "你的邮箱地址(如:rjearlyup@sina.cn)"
+EMAIL_FROM = "rjearlyup@sina.cn"
 
-#自定义backend记得来settings.py里面设置一下哇
+# 自定义backend记得来settings.py里面设置一下哇
 AUTHENTICATION_BACKENDS = (
     'userapp.views.CustomBackend',
 
 )
+
+# —————————————分割线—————————————
+# ———————————下面为restapp的设置——————————
+# 上面的install_apps还要添加rest_framework.authtoken
+# 缓存的设置,这里设置为使用本机缓存,还有其它的内存设置方式,如文件缓存,数据库缓存等
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    }
+}
+
+REST_FRAMEWORK = {
+    # 1分钟内允许访问3次
+    "DEFAULT_THROTTLE_RATES": {
+        "xxx": "3/m"
+    },
+    "DEFAULT_AUTHENTICATION_CLASSES": [],
+    # 一页显示一条数据
+    "page_size":1
+}

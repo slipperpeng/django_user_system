@@ -7,6 +7,8 @@ from django.views.generic.base import View
 from userapp.utils.email_send import send_register_email
 from django.contrib.auth.backends import ModelBackend #自定义的backends需要继承ModelBackend这个类
 from django.db.models import Q #Q语法用来查询并集
+from rest_framework.authtoken.models import Token
+
 ####
 # · create_user           创建用户
 # · authenticate          登陆验证
@@ -53,18 +55,19 @@ class RegisterView(View):
 # 激活用户类
 class ActiveUserView(View):
     def get(self,request,active_code):
-        all_records = EmailVerifyRecord.objects.filter(code=active_code)
-        # 判断请求过来的code值是否是我们之前发给用户的code,如果是,则激活该用户
-        if all_records:
-            for record in all_records:
-                email = record.email
-                user = UserProfile.objects.get(email=email)
-                user.is_active = True
-                user.save()
+        try:
+            the_record = EmailVerifyRecord.objects.get(code=active_code)
+            email = the_record.email
+            user = UserProfile.objects.get(email=email)
+            user.is_active = True
+            user.save()
 
-                #用户激活完,把之前的code给删了,防止它重复激活
-                EmailVerifyRecord.objects.get(code=active_code).delete()
-        else:
+            #用户激活完,把之前的code给删了,防止它重复激活
+            EmailVerifyRecord.objects.get(code=active_code).delete()
+
+            # 激活完还要给用户创建个token
+            Token.objects.create(user=user)
+        except Exception as e:
             return render(request,'active_fail.html')
         return render(request,'login.html')
 
@@ -95,6 +98,11 @@ class LoginView(View):
                         # login函数的作用能根据用户的信息生成session id,并保存在django的session中，当退出浏览器后，将会清空这个表
                         # cookie:一种保存文件在本地的机制，可在用户访问时带上这些信息，但是不安全，所以需要session，它会从数据库中生成一段随机的session id,用户访问时带上这个id，可以实现自动登录，但是一段时间后便会过期
                         login(request,user)
+
+                        # 登录完成后,对用户的token进行一个更新,这里调用generate_key方法来产生新的token
+                        new_token = Token().generate_key()
+                        Token.objects.update(user=user,key=new_token)
+
                         return redirect("/index/",{'user':user_name})
                     else:
                         return render(request, 'login.html', {'msg': '用户未激活!请到注册的邮箱中激活该用户！'})
@@ -170,6 +178,7 @@ class IndexView(View):
     def get(self,request):
         return render(request,'index.html')
 
+
 #注销类
 class LogOutView(View):
     def get(self,request):
@@ -189,3 +198,5 @@ class CustomBackend(ModelBackend):
                 return user
         except Exception as e:
             return None
+
+
