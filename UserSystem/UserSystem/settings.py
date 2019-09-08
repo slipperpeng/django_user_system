@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
 import os
+import djcelery
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -24,7 +25,7 @@ SECRET_KEY = 'ew52rylz5aht)$ayirs1-#baf3)%pjrw7_)jv$u14^pqy^$2l9'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 
@@ -39,7 +40,8 @@ INSTALLED_APPS = [
     'captcha',
     'restapp',
     'rest_framework.authtoken',
-    'rest_framework'
+    'rest_framework',
+    'djcelery'
 ]
 
 MIDDLEWARE = [
@@ -155,5 +157,90 @@ REST_FRAMEWORK = {
     },
     "DEFAULT_AUTHENTICATION_CLASSES": [],
     # 一页显示一条数据
-    "page_size":1
+    "page_size": 1
 }
+
+# —————————————分割线—————————————
+# 实训的扩展（Celery）
+# task 任务  worker 做任务的人 broker 任务队列  backend 做完任务的结果存储位置
+
+djcelery.setup_loader()
+BROKER_URL = 'redis://localhost:6379/1'
+# 设置worker的并发数量为2
+CELERY_CONCURRENCY = 2
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/2'
+# 任务序列化和反序列化用json
+CELERY_TASK_SERIALIZER = 'json'
+# 结果序列化用json
+CELERY_RESULT_SERIALIZER = 'json'
+
+# 配置日志功能
+ADMINS = [('slipper', '1160823499@qq.com'),]
+SERVER_EMAIL = EMAIL_HOST_USER
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+LOGGING = {
+    'version': 1,  # 指明版本
+    'disable_existing_loggers': True,  # 禁用所有已经存在的日志配置
+    # 配置格式器(IP地址、操作时间、行号、函数名、日志级别)
+    'formatters': {
+        # 详细
+        'verbose': {
+            'format': '%(asctime)s [%(name)s:%(lineno)d] [%(module)s:%(funcName)s] [%(levelname)s]- %(message)s'
+        }
+    },
+    # 配置过滤器（debug为False才记录）
+    'filters': {
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse',
+        }
+    },
+    # 配置处理器（控制日志输出的位置）
+    'handlers': {
+        # 所有高于debug的信息都会被传到nullhander
+        'null': {
+            'level': 'DEBUG',
+            'class': 'logging.NullHandler'
+        },
+        # 配置邮件处理器,当出现ERROR时，会发送邮件至指定的邮箱
+        'mail_admins': {
+            'level': 'ERROR',
+            'class': 'django.utils.log.AdminEmailHandler',
+            'filters': ['require_debug_false']
+        },
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.RotatingFileHandler',
+            # 配置文件路径
+            'filename': os.path.join(BASE_DIR, 'log', 'debug.log'),
+            'maxBytes': 1024 * 1024 * 5,  # 最多5M
+            'backupCount': 5,  # 最多有5个这种文件
+            'formatter': 'verbose'
+        },
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose'
+        },
+    },
+    # 定义记录器
+    'loggers': {
+        # 使用null处理器，所有高于（包括）info的消息会被发往null处理器，向父层次传递信息
+        'django': {
+            'handlers': ['file','console'],
+            'propagate': False,
+            'level': 'DEBUG',
+        },
+        #所有高于（包括）error的消息会被发往mail_admins，debug处理器
+        'django.request': {
+            'handlers': ['file', 'mail_admins'],
+            'level': 'ERROR',
+            'propagate': True,  # 是否继承父类的log信息
+        },
+        # 对于不在 ALLOWED_HOSTS 中的请求不发送报错邮件
+        'django.security.DisallowedHost': {
+            'handlers': ['null'],
+            'propagate': False,
+        }
+    }
+}
+

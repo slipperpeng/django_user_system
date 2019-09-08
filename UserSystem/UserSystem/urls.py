@@ -25,6 +25,9 @@ from rest_framework import routers
 router = routers.DefaultRouter()
 router.register(r"xxx",LastOverRideArticlePostDetail)
 
+from django.views import static ##新增
+from django.conf import settings ##新增
+
 urlpatterns = [
     url(r"^admin/", admin.site.urls),
     url(r"^register/$", RegisterView.as_view(),name="register"),
@@ -56,4 +59,7 @@ urlpatterns = [
     # 这一行等于上面4句
     url(r'^', include(router.urls)),
 
+    # 实训扩展
+    # DeleteMessageApi
+    url(r'^deletemessageapi/$',DeleteMessageApi.as_view()),
 ]
