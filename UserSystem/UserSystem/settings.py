@@ -130,7 +130,7 @@ EMAIL_HOST = "smtp.sina.cn"
 EMAIL_PORT = 25
 EMAIL_HOST_USER = "rjearlyup@sina.cn"
 # cda3997346da4578)
-EMAIL_HOST_PASSWORD = "cda3997346da7814"
+EMAIL_HOST_PASSWORD = "cda39946da7814"
 EMAIL_USE_TLS = False
 EMAIL_FROM = "rjearlyup@sina.cn"
 
